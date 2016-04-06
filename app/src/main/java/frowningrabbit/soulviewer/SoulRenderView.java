@@ -46,6 +46,7 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
         public static final float DRAW_NO_ARM_THRESHOLD = 0.1f;
         public static final float FULL_MOOD_THRESHOLD = 0.8f;
         public static final float NO_MOOD_THRESHOLD = 0.2f;
+        public static final int RENDER_DIVIDER = 4;
         private boolean mVisible = false;
         //        private final Handler mHandler = new Handler();
 //        private final Runnable mUpdateDisplay = new Runnable() {
@@ -55,12 +56,12 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
 //            }
 //        };
         private int[][] pixelColors;
-        private int width;
-        private int height;
+        private int originalWidth;
+        private int originalHeight;
+        private int renderWidth;
+        private int renderHeight;
         private int[][] coral;
-        private int[][] rotatedCoral;
         private float scaleRate = 1.2f;
-        private int scaleX[], scaleY[];
         private boolean initialized;
         double colorCounter = 300;
         int[] colorPallet = new int[256];
@@ -87,6 +88,9 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
         RenderScript rs;
         private ScriptIntrinsicBlur theIntrinsic;
         private float moodIndex = 1;
+        private Rect sourceRect;
+        private Rect destCanvasRect;
+        private Rect scaleSubRect;
 
         public void setDrawLeftArm(float drawLeftArm) {
             this.drawLeftArm = drawLeftArm;
@@ -98,7 +102,7 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
 
         public void setMoodIndex(float moodIndex) {
 
-            this.moodIndex = moodIndex;
+            this.moodIndex = Math.abs(moodIndex);
         }
 
         public void setToNeutral() {
@@ -274,23 +278,21 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
         public void setSurfaceSize(int width, int height) {
             // synchronized to make sure these all change atomically
             synchronized (mSurfaceHolder) {
-                width = width / 4;
-                height = height / 4;
-                this.width = width;
-                this.height = height;
-                pixelColors = new int[width][height];
-                sourceBuffer.setBitmap(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));
-                destinationBuffer.setBitmap(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));
-                scaleX = new int[width];
-                scaleY = new int[height];
-                int sx = width / 2;
-                int sy = height / 2;
-                for (int i = 0; i < width; i++) {
-                    scaleX[i] = (int) (sx + ((i - sx) * (7.5 / 10)));
-                }
-                for (int i = 0; i < height; i++) {
-                    scaleY[i] = (int) (sy + ((i - sy) * (7.5 / 10)));
-                }
+                originalWidth = width;
+                originalHeight = height;
+                renderWidth = originalWidth / RENDER_DIVIDER;
+                renderHeight = originalHeight / RENDER_DIVIDER;
+                pixelColors = new int[renderWidth][renderHeight];
+                sourceBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
+                destinationBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
+
+                sourceRect = new Rect(0, 0, renderWidth, renderHeight);
+                destCanvasRect = new Rect(0, 0, originalWidth, originalHeight);
+
+                int xScaleOffset = (int) (renderWidth - (renderWidth / scaleRate)) / 2;
+                int yScaleOffset = (int) (renderHeight - (renderHeight / scaleRate)) / 2;
+                scaleSubRect = new Rect(xScaleOffset, yScaleOffset, renderWidth - xScaleOffset, renderHeight - yScaleOffset);
+
             }
         }
 
@@ -307,46 +309,46 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
 
 
         /**
-         * Draws the ship, fuel/speed bars, and background to the provided
-         * Canvas.
+         * Draw the visualization
          */
         private void doDraw(Canvas canvas) {
             startTime = System.currentTimeMillis();
             frames++;
+
+            scale(sourceBuffer, destinationBuffer);
+
             rotateCoral(radius, radius * 2.72);
+
             radius += (6.248 / 256) * rotationSpeed;
+
             initColor();
-
-            scale(sourceBuffer, destinationBuffer); // A -> B
-
-            rendercolors(destinationBuffer); //B
+            rendercolors(destinationBuffer);
 
             if (shouldBlur) {
                 //switch the buffers
-                SurfaceInfo tmp = sourceBuffer;
-                sourceBuffer = destinationBuffer;
-                destinationBuffer = tmp;
-                blur(sourceBuffer, destinationBuffer); // B -> A
+                swapBufferRefs();
+                blur(sourceBuffer, destinationBuffer);
             }
 
-
-            Rect srcRect = new Rect(0, 0, width, height);
-            Rect destRect = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
-            canvas.drawBitmap(destinationBuffer.bitmap, srcRect, destRect, null);
+            canvas.drawBitmap(destinationBuffer.bitmap, sourceRect, destCanvasRect, null);
 
             //switch the buffers, so we add to the final version next iteration
-            SurfaceInfo tmp = sourceBuffer;
-            sourceBuffer = destinationBuffer;
-            destinationBuffer = tmp;
+            swapBufferRefs();
 
             cumuTime += System.currentTimeMillis() - startTime;
             Log.i("draw average", "" + (cumuTime / frames));
 
         }
 
+        private void swapBufferRefs() {
+            SurfaceInfo tmp = sourceBuffer;
+            sourceBuffer = destinationBuffer;
+            destinationBuffer = tmp;
+        }
+
         private void rendercolors(SurfaceInfo buffer) {
-            for (int j = 0; j < height; j++) {
-                for (int i = 0; i < width; i++) {
+            for (int j = 0; j < renderHeight; j++) {
+                for (int i = 0; i < renderWidth; i++) {
                     // get value from pixel in scaled image, and store
                     if (pixelColors[i][j] > 0) {
                         paint.setColor(colorPallet[Math.min(255, pixelColors[i][j])]);
@@ -355,7 +357,7 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
-            buffer.canvas.drawPoint(width / 2, height / 2, centerPointpaint);
+            buffer.canvas.drawPoint(renderWidth / 2, renderHeight / 2, centerPointpaint);
         }
 
         private void clearColors() {
@@ -374,17 +376,12 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         void scale(SurfaceInfo source, SurfaceInfo destination) {
-            int xScaleOffset = (int) (width - (width / scaleRate)) / 2;
-            int yScaleOffset = (int) (height - (height / scaleRate)) / 2;
-            Rect srcRect = new Rect(xScaleOffset, yScaleOffset, width - xScaleOffset, height - yScaleOffset);
-            Rect destRect = new Rect(0, 0, destination.bitmap.getWidth(), destination.bitmap.getHeight());
-            destination.canvas.drawBitmap(source.bitmap, srcRect, destRect, null);
+            destination.canvas.drawBitmap(source.bitmap, scaleSubRect, sourceRect, null);
         }
 
         public void initializeData() {
             /* init buffers */
             coral = new int[PARTICALS][3];
-            rotatedCoral = new int[PARTICALS][3];
 
             initialized = true;
 
@@ -431,12 +428,13 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
          */
         private void initColor() {
             int red, green, blue;
+            int endIntensity = 256;
             if (!useForegroundColor) {
-                int startIntensity = moodIndex > FULL_MOOD_THRESHOLD ? 128 : (int) (Math.max(NO_MOOD_THRESHOLD, moodIndex) * 128);
-                Log.i("draw average", "startIntens: " + startIntensity + " moodIndex: " + moodIndex);
-                red = (int) (startIntensity + (127 * Math.cos(colorCounter++ / 150)));
-                green = (int) (startIntensity + (127 * Math.cos(colorCounter / 80)));
-                blue = (int) (startIntensity + (127 * Math.cos(colorCounter / 220)));
+                int startIntensity = moodIndex > FULL_MOOD_THRESHOLD ? 128 : (int) (Math.max(NO_MOOD_THRESHOLD, moodIndex * 1.6f) * 128);
+                endIntensity = 2 * startIntensity;
+                red = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter++ / 150))));
+                green = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter / 80))));
+                blue = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter / 220))));
 
             } else {
                 red = (foregroundColor >> 16) & 0x000000ff;
@@ -447,18 +445,20 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
             for (int i = 0; i < 128; i++) {
                 colorPallet[i] = Color.rgb(((red * i) / 128), ((green * i) / 128), ((blue * i) / 128));
 
-                colorPallet[128 + i] = Color.rgb((red + (((256 - red) * i) / 128)), (green + (((256 - green) * i) / 128)), (blue + (((256 - blue) * i) / 128)));
+                colorPallet[128 + i] = Color.rgb(   (red + (((endIntensity - red) * i) / 128)),
+                                                    (green + (((endIntensity - green) * i) / 128)),
+                                                    (blue + (((endIntensity - blue) * i) / 128)));
             }
         }
 
         double cosX, sinX, cosY, sinY;
         double x, y, z, newx, newy, newz;
         int centerX, centerY;
-        int finalX, finalY, finalZ
+        int finalX, finalY, finalZ;
 
         private void rotateCoral(double angelX, double angelY) {
-            centerX = width / 2;
-            centerY = height / 2;
+            centerX = renderWidth / 2;
+            centerY = renderHeight / 2;
 
             cosX = Math.cos(angelX);
             sinX = Math.sin(angelX);
@@ -478,13 +478,13 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
                 finalY = (int) (newy);
                 finalZ = (int) ((newz * cosY) - (newx * sinY));
 
-
+                int luminus = (int) (4 + (moodIndex * 4));
                 if (drawLeftArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawLeftArm) % 1f < drawLeftArm)) {
-                    pixelColors[centerX + rotatedCoral[i][0]][centerY + rotatedCoral[i][1]] += 8; //add to the color
+                    pixelColors[centerX + finalX][centerY + finalY] += luminus; //add to the color
                 }
 
                 if (drawRightArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawRightArm) % 1f < drawRightArm)) {
-                    pixelColors[centerX - rotatedCoral[i][0]][centerY - rotatedCoral[i][1]] += 8; //add to the color
+                    pixelColors[centerX - finalX][centerY - finalY] += luminus; //add to the color
                 }
             }
         }
@@ -540,7 +540,7 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        if (!hasWindowFocus) thread.pause();
+        //if (!hasWindowFocus) thread.pause(); //this seems not to work on some devices, getting called spuriously :(
     }
 
     /* Callback invoked when the surface dimensions change. */
