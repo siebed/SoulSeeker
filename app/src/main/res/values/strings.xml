@@ -9,4 +9,16 @@
     <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
     <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
+
+    <string name="shouldBlur">shouldBlur</string>
+    <string name="rotationSpeed">rotationSpeed</string>
+    <string name="useForegroundColor">useForegroundColor</string>
+    <string name="foregroundColor">foregroundColor</string>
+    <string name="dialog_color_picker">Color Picker</string>
+    <string name="press_color_to_apply">Press on Color to apply</string>
+
+    <!-- Preferences -->
+    <string name="pref_category">Category</string>
+    <string name="color1_title">Color</string>
+    <string name="color1_summary">Color to use for the coral</string>
 </resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/shouldBlur"
+        android:title="Smoke trail" />
+
+    <frowningrabbit.soulviewer.SeekBarPreference
+        android:defaultValue="100"
+        android:dialogMessage=""
+        android:key="@string/rotationSpeed"
+        android:max="400"
+        android:summary="The speed of the rotation"
+        android:text="%"
+        android:title="Rotation speed" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/useForegroundColor"
+        android:summary="Use a single color for the coral "
+        android:title="Use single color" />
+
+    <net.margaritov.preference.colorpicker.ColorPickerPreference
+        alphaSlider="false"
+        android:defaultValue="@color/colorPrimaryDark"
+        android:key="@string/foregroundColor"
+        android:summary="@string/color1_summary"
+        android:title="@string/color1_title" />
+
+</PreferenceScreen>
