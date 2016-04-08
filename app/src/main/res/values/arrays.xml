@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="xferModes">
+        <item>ADD</item>
+        <item>SRC</item>
+        <item>MULTIPLY</item>
+        <item>LIGHTEN</item>
+        <item>DARKEN</item>
+        <item>XOR</item>
+        <item>SCREEN</item>
+        <item>OVERLAY</item>
+    </string-array>
+
+    <string-array name="detailOptions">
+        <item>"Here, take my battery. All of it!"</item>
+        <item>"Omy, thats shiny"</item>
+        <item>"Default is what default does"</item>
+        <item>"The 80's called, they want their pixels back"</item>
+    </string-array>
+
+    <string-array name="listValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+
+</resources>

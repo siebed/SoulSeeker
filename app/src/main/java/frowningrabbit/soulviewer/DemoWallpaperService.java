@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.wallpaper.WallpaperService;
@@ -91,8 +92,11 @@ public class DemoWallpaperService extends WallpaperService {
 
         private void processPreferences() {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DemoWallpaperService.this);
-//            shouldBlur = prefs.getBoolean(getString(R.string.shouldBlur), true);
-//            rotationSpeed = prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f;
+            renderer.setShouldBlur(prefs.getBoolean(getString(R.string.shouldBlur), true));
+            renderer.setShouldScale(prefs.getBoolean(getString(R.string.shouldScale), true));
+            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
+            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
+            renderer.changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(getString(R.string.drawXferMode), "SRC")));
         }
 
         @Override
@@ -110,6 +114,7 @@ public class DemoWallpaperService extends WallpaperService {
 //            } else if (key.equalsIgnoreCase(getString(R.string.foregroundColor))) {
 //                foregroundColor = sharedPreferences.getInt(key, 0xff00ff);
 //            }
+            processPreferences();
 
         }
 

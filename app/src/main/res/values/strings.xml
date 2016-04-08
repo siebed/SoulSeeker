@@ -11,9 +11,12 @@
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
 
     <string name="shouldBlur">shouldBlur</string>
+    <string name="shouldScale">shouldScale</string>
     <string name="rotationSpeed">rotationSpeed</string>
     <string name="useForegroundColor">useForegroundColor</string>
     <string name="foregroundColor">foregroundColor</string>
+    <string name="drawXferMode">drawXFerMode</string>
+    <string name="renderDetail">renderDetail</string>
     <string name="dialog_color_picker">Color Picker</string>
     <string name="press_color_to_apply">Press on Color to apply</string>
 
