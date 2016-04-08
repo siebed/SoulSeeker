@@ -23,7 +23,7 @@ class SoulRenderer {
     public static final float DRAW_NO_ARM_THRESHOLD = 0.1f;
     public static final float FULL_MOOD_THRESHOLD = 0.8f;
     public static final float NO_MOOD_THRESHOLD = 0.2f;
-    public static final int RENDER_DIVIDER = 3;
+    public static final int RENDER_DIVIDER = 4;
     public static final PorterDuff.Mode DEFAULT_XFER_MODE = PorterDuff.Mode.LIGHTEN;
     private final Context mContext;
     private int[][] pixelColors;
@@ -145,7 +145,7 @@ class SoulRenderer {
 
         centerPointpaint = new Paint();
         centerPointpaint.setColor(Color.BLACK);
-        centerPointpaint.setStrokeWidth(2);
+        centerPointpaint.setStrokeWidth(3);
 
         blendPaint = new Paint();
 
