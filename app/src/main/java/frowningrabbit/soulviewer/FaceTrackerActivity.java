@@ -160,6 +160,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         super.onResume();
 
         startCameraSource();
+        mSoulView.resume();
     }
 
     /**
@@ -169,6 +170,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         mPreview.stop();
+        mSoulView.pause();
     }
 
     /**

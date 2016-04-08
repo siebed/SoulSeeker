@@ -3,6 +3,7 @@ package frowningrabbit.soulviewer;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.support.annotation.MainThread;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -16,6 +17,9 @@ import android.view.SurfaceView;
  * by the system.
  */
 class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
+
+
+
     class SoulRenderThread extends Thread {
         SoulRenderer renderer;
 
@@ -79,7 +83,7 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
                     synchronized (surfaceHolder) {
                         if (mMode == STATE_RUNNING) {
                             // Do not render if we are not running anymore
-                            if (mRun) {
+                            if (mRun && c != null) {
                                 renderer.doDraw(c);
                             }
                         }
@@ -112,6 +116,10 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
         public void setRunning(boolean b) {
             mRun = b;
             mMode = b ? STATE_RUNNING : STATE_PAUSED;
+        }
+
+        public void setState(int state) {
+            mMode = state;
         }
 
         /* Callback invoked when the surface dimensions change. */
@@ -154,13 +162,18 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+        if (thread.getState() == Thread.State.TERMINATED) {
+            thread = new SoulRenderThread(holder, getContext());
+        }
         //3...2...1....GO!
         thread.setRunning(true);
-        thread.start();
+        if (!thread.isAlive()) {
+            thread.start();
+        }
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Make sure we stop the thread before we return.
+        // Make sure we pause the thread before we return.
         boolean retry = true;
         thread.setRunning(false);
         while (retry) {
@@ -171,4 +184,13 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
     }
+
+    public void pause() {
+        thread.setState(SoulRenderThread.STATE_PAUSED);
+    }
+
+    public void resume() {
+        thread.setState(SoulRenderThread.STATE_RUNNING);
+    }
+
 }
