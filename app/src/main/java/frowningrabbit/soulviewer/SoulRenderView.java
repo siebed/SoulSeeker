@@ -76,6 +76,12 @@ class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
 
         @Override
         public void run() {
+            try {
+                Thread.sleep(500);
+            }
+            catch (Exception ignored) {
+            }
+
             while (mRun) {
                 Canvas c = null;
                 try {
