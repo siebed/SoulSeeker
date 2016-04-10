@@ -49,7 +49,7 @@ import frowningrabbit.soulviewer.ui.camera.GraphicOverlay;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity {
+public final class SoulSeeker extends AppCompatActivity {
     private static final String TAG = "FaceTracker";
 
     /**
