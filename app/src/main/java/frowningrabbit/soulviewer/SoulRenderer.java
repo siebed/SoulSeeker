@@ -12,6 +12,7 @@ import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
+import android.support.v8.renderscript.ScriptIntrinsicResize;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -22,9 +23,11 @@ class SoulRenderer {
     public static final float DRAW_FULL_ARM_THRESHOLD = 0.8f;
     public static final float DRAW_NO_ARM_THRESHOLD = 0.1f;
     public static final float FULL_MOOD_THRESHOLD = 0.8f;
-    public static final float NO_MOOD_THRESHOLD = 0.2f;
+    public static final float NO_MOOD_THRESHOLD = 0.8f;
     public static final int RENDER_DIVIDER = 4;
     public static final PorterDuff.Mode DEFAULT_XFER_MODE = PorterDuff.Mode.LIGHTEN;
+
+
     private final Context mContext;
     private int[][] pixelColors;
     private int[] pixels;
@@ -36,7 +39,6 @@ class SoulRenderer {
     private int[] drawPointsX;
     private int[] drawPointsY;
     private float scaleRate = 1.2f;
-    private boolean initialized;
     double colorCounter = 300;
     int[] colorPallet = new int[256];
     double radius = 1.5;
@@ -44,7 +46,8 @@ class SoulRenderer {
     int inty = 0;
     int intz = 0;
     float scaleFactor = 1;
-    long startTime = System.currentTimeMillis();
+    long startTime;
+    long frameTime;
     long timingStart, timingEnd;
     int frames = 0;
     long cumuTime = 0;
@@ -52,19 +55,22 @@ class SoulRenderer {
     //vars controlled by prefs
     private boolean shouldBlur = true;
     private boolean shouldScale = true;
-    float drawLeftArm = 1f;
-    float drawRightArm = 1f;
-    private float rotationSpeed = 1f;
     private boolean useForegroundColor;
     private int foregroundColor;
+    private float rotationSpeed = 1f;
+
+
+
+    float drawLeftArm = 1f;
+    float drawRightArm = 1f;
     private SurfaceInfo sourceBuffer = new SurfaceInfo();
     private SurfaceInfo destinationBuffer = new SurfaceInfo();
-//    private Allocation mBlurInput, mBlurOutput;
     private Paint paint;
     private Paint blendPaint;
     private Paint centerPointpaint;
     RenderScript rs;
     private ScriptIntrinsicBlur theIntrinsic;
+    private boolean moodIsSet = false;
     private float moodIndex = 1;
     private Rect sourceRect;
     private Rect destCanvasRect;
@@ -73,16 +79,24 @@ class SoulRenderer {
     private Bitmap blendBitmap;
 
     public void setDrawLeftArm(float drawLeftArm) {
-        this.drawLeftArm = drawLeftArm;
+        if (drawLeftArm > 0 && Math.abs(this.drawLeftArm - drawLeftArm) > 0.1f) {
+            this.drawLeftArm = drawLeftArm;
+        }
     }
 
     public void setDrawRightArm(float drawRightArm) {
-        this.drawRightArm = drawRightArm;
+        if (drawRightArm > 0 && Math.abs(this.drawRightArm - drawRightArm) > 0.1f) {
+            this.drawRightArm = drawRightArm;
+        }
     }
 
     public void setMoodIndex(float moodIndex) {
-
-        this.moodIndex = Math.abs(moodIndex);
+        //only react on 'mood swings'
+        if (moodIndex > 0 && Math.abs(this.moodIndex - moodIndex) > 0.1f) {
+            this.moodIsSet = true;
+            this.moodIndex = Math.abs(moodIndex);
+            changeXferMode(PorterDuff.Mode.ADD);
+        }
     }
 
     public void changeXferMode(PorterDuff.Mode mode) {
@@ -91,10 +105,11 @@ class SoulRenderer {
     }
 
     public void setToNeutral() {
+        moodIsSet = false;
         moodIndex = 1;
         drawLeftArm = 1f;
         drawRightArm = 1f;
-        porterDuffMode = DEFAULT_XFER_MODE;
+        changeXferMode(DEFAULT_XFER_MODE);
     }
 
     public void setShouldBlur(boolean shouldBlur) {
@@ -103,6 +118,14 @@ class SoulRenderer {
 
     public void setShouldScale(boolean shouldScale) {
         this.shouldScale = shouldScale;
+    }
+
+    public void setUseForegroundColor(boolean useForegroundColor) {
+        this.useForegroundColor = useForegroundColor;
+    }
+
+    public void setForegroundColor(int foregroundColor) {
+        this.foregroundColor = foregroundColor;
     }
 
     public void setRotationSpeed(float rotationSpeed) {
@@ -137,15 +160,14 @@ class SoulRenderer {
     }
 
     public void initializeData() {
+        colorCounter = Math.random() * 6000; //start with a random color
         coral = new int[PARTICALS][3];
         drawPointsX = new int[2 * PARTICALS];
         drawPointsY = new int[2 * PARTICALS];
 
-        initialized = true;
-
         centerPointpaint = new Paint();
         centerPointpaint.setColor(Color.BLACK);
-        centerPointpaint.setStrokeWidth(3);
+        centerPointpaint.setStrokeWidth(8);
 
         blendPaint = new Paint();
 
@@ -158,7 +180,7 @@ class SoulRenderer {
     }
 
     private void setXferMode() {
-        paint.setXfermode(new PorterDuffXfermode(porterDuffMode));
+//        paint.setXfermode(new PorterDuffXfermode(porterDuffMode));
         blendPaint.setXfermode(new PorterDuffXfermode(porterDuffMode));
     }
 
@@ -188,7 +210,6 @@ class SoulRenderer {
 
     /* Callback invoked when the surface dimensions change. */
     public void setSurfaceSize(int width, int height) {
-        // synchronized to make sure these all change atomically
         originalWidth = width;
         originalHeight = height;
         renderWidth = originalWidth / RENDER_DIVIDER;
@@ -206,8 +227,7 @@ class SoulRenderer {
         int yScaleOffset = (int) (renderHeight - (renderHeight / scaleRate)) / 2;
         scaleSubRect = new Rect(xScaleOffset, yScaleOffset, renderWidth - xScaleOffset, renderHeight - yScaleOffset);
 
-//        mBlurInput = Allocation.createFromBitmap(rs, sourceBuffer.bitmap, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
-//        mBlurOutput = Allocation.createTyped(rs, mBlurInput.getType());
+        frameTime = System.currentTimeMillis();
     }
 
 
@@ -215,26 +235,34 @@ class SoulRenderer {
      * Draw the visualization
      */
     public void doDraw(Canvas canvas) {
+        if (canvas == null) {
+            return;
+        }
         StringBuilder timingString = new StringBuilder("[Rendertime] ");
 
         frames++;
-        startTime = System.currentTimeMillis();
 
-        timingStart = startTime;
         if (shouldScale) {
+            timingStart = System.currentTimeMillis();
             scale(sourceBuffer, destinationBuffer);
-        } else {
             swapBufferRefs();
+            timingEnd = System.currentTimeMillis();
+            timingString.append(" scale: " + (timingEnd - timingStart));
         }
-        timingEnd = System.currentTimeMillis();
-        timingString.append(" scale: " + (timingEnd - timingStart));
+
 
         timingStart = timingEnd;
         rotateCoral(radius, radius * 2.72);
         timingEnd = System.currentTimeMillis();
         timingString.append(" rotateCoral: " + (timingEnd - timingStart));
 
-        radius += (6.248 / 256) * rotationSpeed;
+        //If mood is set rotation is more active, like an excited puppy ;)
+        if (moodIsSet) {
+            radius += (System.currentTimeMillis() - frameTime) * ((6.248 / 25000) * (1.5f + moodIndex));
+        } else {
+            radius += (System.currentTimeMillis() - frameTime) * ((6.248 / 25000) * rotationSpeed);
+        }
+        frameTime = System.currentTimeMillis();
 
         timingStart = timingEnd;
         initColor();
@@ -242,38 +270,31 @@ class SoulRenderer {
         timingString.append(" initColor: " + (timingEnd - timingStart));
 
         timingStart = timingEnd;
-        renderColors(destinationBuffer);
+        renderColors(sourceBuffer);
         timingEnd = System.currentTimeMillis();
         timingString.append(" renderColors: " + (timingEnd - timingStart));
 
         if (shouldBlur) {
             //switch the buffers
-            swapBufferRefs();
             timingStart = System.currentTimeMillis();
             blur(sourceBuffer, destinationBuffer);
             timingEnd = System.currentTimeMillis();
             timingString.append(" blur: " + (timingEnd - timingStart));
+            swapBufferRefs();
         }
 
+
         timingStart = System.currentTimeMillis();
-        canvas.drawBitmap(destinationBuffer.bitmap, sourceRect, destCanvasRect, null);
+        canvas.drawBitmap(sourceBuffer.bitmap, sourceRect, destCanvasRect, null);
         timingEnd = System.currentTimeMillis();
         timingString.append(" canvas.drawBitmap: " + (timingEnd - timingStart));
 
         //switch the buffers, so we add to the final version next iteration
-        swapBufferRefs();
-//        timingStart = System.currentTimeMillis();
-//        destinationBuffer.bitmap.getPixels(pixels, 0,renderWidth,0,0,renderWidth, renderHeight);
-//        destinationBuffer.bitmap.setPixels(pixels,0,renderWidth,0,0, renderWidth, renderHeight);
-//        destinationBuffer.canvas.drawBitmap(sourceBuffer.bitmap, 0,0, blendPaint);
-//        timingEnd = System.currentTimeMillis();
-//        timingString.append(" get/set pixels: " + (timingEnd - timingStart));
+//        swapBufferRefs();
 
         cumuTime += System.currentTimeMillis() - startTime;
 //        Log.i("draw average", "" + (cumuTime / frames));
         Log.i("timing", timingString.toString());
-        Log.i("total frame time: ", (System.currentTimeMillis() - startTime) + " ms");
-
     }
 
     private void swapBufferRefs() {
@@ -283,43 +304,21 @@ class SoulRenderer {
     }
 
     private void renderColors(SurfaceInfo buffer) {
-        for(int i = 0; i < drawPointsCounter; i++) {
-            //paint.setColor(colorPallet[Math.min(255, pixelColors[drawPointsX[i]][drawPointsY[i]])]);
-            //buffer.canvas.drawPoint(drawPointsX[i], drawPointsY[i], paint);
-
+        for (int i = 0; i < drawPointsCounter; i++) {
             pixels[(drawPointsY[i] * renderWidth) + drawPointsX[i]] = colorPallet[Math.min(255, pixelColors[drawPointsX[i]][drawPointsY[i]])];
         }
 
-        blendBitmap.setPixels(pixels,0,renderWidth,0,0, renderWidth, renderHeight);
-        buffer.canvas.drawBitmap(blendBitmap, 0,0, blendPaint);
+        blendBitmap.setPixels(pixels, 0, renderWidth, 0, 0, renderWidth, renderHeight);
+        buffer.canvas.drawBitmap(blendBitmap, 0, 0, blendPaint);
         Arrays.fill(pixels, 0);
 
-//        for (int j = 0; j < renderHeight; j++) {
-//            for (int i = 0; i < renderWidth; i++) {
-//                // get value from pixel in scaled image, and store
-//                if (pixelColors[i][j] > 0) {
-//                    paint.setColor(colorPallet[Math.min(255, pixelColors[i][j])]);
-//                    buffer.canvas.drawPoint(i, j, paint);
-////                    buffer.bitmap.setPixel(i, j, Color.GREEN); //colorPallet[Math.min(255, pixelColors[i][j])]);
-////                    pixels[(j * renderWidth) + i] = colorPallet[Math.min(255, pixelColors[i][j])];
-//               // } else {
-////                    if(pixels[(j * renderWidth) + i] != 0) {
-////                        pixels[(j * renderWidth) + i] = 0;
-////                    }
-//                }
-//            }
-//        }
-        buffer.canvas.drawPoint(renderWidth / 2, renderHeight / 2, centerPointpaint);
+        buffer.canvas.drawCircle(renderWidth / 2, renderHeight / 2, 3, centerPointpaint);
     }
 
     private void clearColors() {
         for (int i = 0; i < drawPointsCounter; i++) {
-            pixelColors[drawPointsX[i]][ drawPointsY[i]] = 0;
+            pixelColors[drawPointsX[i]][drawPointsY[i]] = 0;
         }
-
-//        for (int j = 0; j < pixelColors.length; j++) {
-//            Arrays.fill(pixelColors[j], 0);
-//        }
     }
 
     public void blur(SurfaceInfo inputBitmap, SurfaceInfo outputBitmap) {
@@ -395,10 +394,10 @@ class SoulRenderer {
             finalY = (int) (newy);
             finalZ = (int) ((newz * cosY) - (newx * sinY));
 
-            int luminus = (int) (4 + (moodIndex * 4));
+            int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 4 : 8; // Reduce luminus a bit when xfer mode is "ADD"
             if (centerX - Math.abs(finalX) > 0 && centerY - Math.abs(finalY) > 0) {
                 if (drawLeftArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawLeftArm) % 1f < drawLeftArm)) {
-                    if(pixelColors[centerX + finalX][centerY + finalY] == 0) {
+                    if (pixelColors[centerX + finalX][centerY + finalY] == 0) {
                         drawPointsX[drawPointsCounter] = centerX + finalX;
                         drawPointsY[drawPointsCounter] = centerY + finalY;
                         drawPointsCounter++;
@@ -407,7 +406,7 @@ class SoulRenderer {
                 }
 
                 if (drawRightArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawRightArm) % 1f < drawRightArm)) {
-                    if(pixelColors[centerX - finalX][centerY - finalY] == 0) {
+                    if (pixelColors[centerX - finalX][centerY - finalY] == 0) {
                         drawPointsX[drawPointsCounter] = centerX - finalX;
                         drawPointsY[drawPointsCounter] = centerY - finalY;
                         drawPointsCounter++;

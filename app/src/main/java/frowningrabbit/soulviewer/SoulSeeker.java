@@ -390,6 +390,7 @@ public final class SoulSeeker extends AppCompatActivity {
             soulView.getThread().setMoodIndex(face.getIsSmilingProbability());
             soulView.getThread().setDrawLeftArm(face.getIsLeftEyeOpenProbability());
             soulView.getThread().setDrawRightArm(face.getIsRightEyeOpenProbability());
+            Log.e("Face values", "Smile: " + face.getIsSmilingProbability() + " Left eye: " + face.getIsLeftEyeOpenProbability() + " Right eye" + face.getIsRightEyeOpenProbability());
         }
 
         /**

@@ -16,7 +16,7 @@ import android.view.SurfaceView;
  * It does an invalidate() to prompt another draw() as soon as possible
  * by the system.
  */
-class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
+public class SoulRenderView extends SurfaceView implements SurfaceHolder.Callback {
 
 
 

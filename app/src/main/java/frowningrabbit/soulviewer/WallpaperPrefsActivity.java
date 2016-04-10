@@ -9,7 +9,7 @@ public class WallpaperPrefsActivity extends PreferenceActivity {
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs);
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(DemoWallpaperService.demoWallpaperEngine);
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(DemoWallpaperService.wallpaperEngine);
     }
 
 }

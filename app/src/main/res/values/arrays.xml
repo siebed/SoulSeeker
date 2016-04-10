@@ -2,10 +2,10 @@
 <resources>
 
     <string-array name="xferModes">
+        <item>LIGHTEN</item>
         <item>ADD</item>
         <item>SRC</item>
         <item>MULTIPLY</item>
-        <item>LIGHTEN</item>
         <item>DARKEN</item>
         <item>XOR</item>
         <item>SCREEN</item>
@@ -14,7 +14,7 @@
 
     <string-array name="detailOptions">
         <item>"Here, take my battery. All of it!"</item>
-        <item>"Omy, thats shiny"</item>
+        <item>"O my, thats shiny"</item>
         <item>"Default is what default does"</item>
         <item>"The 80's called, they want their pixels back"</item>
     </string-array>
@@ -28,5 +28,15 @@
         <item>5</item>
         <item>6</item>
     </string-array>
+
+    <integer-array name="detailListValues">
+        <item>1</item>
+        <item>2</item>
+        <item>4</item>
+        <item>16</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </integer-array>
 
 </resources>

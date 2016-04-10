@@ -35,7 +35,7 @@
 
     <PreferenceCategory android:title="Advanced knobs and dials">
         <ListPreference
-            android:defaultValue="SRC"
+            android:defaultValue="LIGHTEN"
             android:entries="@array/xferModes"
             android:entryValues="@array/xferModes"
             android:key="@string/drawXferMode"

@@ -10,8 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".FaceTrackerActivity"
-            android:label="@string/title_activity_face_tracker"
+            android:name=".SoulSeeker"
+            android:label="@string/main_activity"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

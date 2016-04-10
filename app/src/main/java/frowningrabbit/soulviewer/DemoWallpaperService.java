@@ -12,12 +12,12 @@ import android.view.SurfaceHolder;
 
 public class DemoWallpaperService extends WallpaperService {
 
-    public static DemoWallpaperEngine demoWallpaperEngine;
+    public static DemoWallpaperEngine wallpaperEngine;
 
     @Override
     public Engine onCreateEngine() {
-        demoWallpaperEngine = new DemoWallpaperEngine(getBaseContext());
-        return demoWallpaperEngine;
+        wallpaperEngine = new DemoWallpaperEngine(getBaseContext());
+        return wallpaperEngine;
     }
 
     private class DemoWallpaperEngine extends Engine implements OnSharedPreferenceChangeListener {
@@ -47,7 +47,11 @@ public class DemoWallpaperService extends WallpaperService {
                 renderer.doDraw(c);
             } finally {
                 if (c != null) {
-                    holder.unlockCanvasAndPost(c);
+                    try {
+                        holder.unlockCanvasAndPost(c);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             mHandler.removeCallbacks(mUpdateDisplay);
@@ -97,6 +101,8 @@ public class DemoWallpaperService extends WallpaperService {
             renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
             renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
             renderer.changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(getString(R.string.drawXferMode), "SRC")));
+            renderer.setUseForegroundColor(prefs.getBoolean(getString(R.string.useForegroundColor), false));
+            renderer.setForegroundColor(prefs.getInt(getString(R.string.foregroundColor), 0xff00ff));
         }
 
         @Override
