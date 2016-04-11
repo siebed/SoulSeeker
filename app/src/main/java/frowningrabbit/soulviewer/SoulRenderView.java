@@ -1,6 +1,7 @@
 package frowningrabbit.soulviewer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
@@ -197,6 +198,10 @@ public class SoulRenderView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void resume() {
         thread.setState(SoulRenderThread.STATE_RUNNING);
+    }
+
+    public void setPreferences(SharedPreferences prefs) {
+        thread.renderer.processPreferences(prefs, getContext());
     }
 
 }

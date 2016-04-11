@@ -1,6 +1,8 @@
 package frowningrabbit.soulviewer;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.preference.PreferenceManager;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
@@ -17,7 +20,7 @@ import android.util.Log;
 
 import java.util.Arrays;
 
-class SoulRenderer {
+public class SoulRenderer {
 
     private static final int PARTICALS = 8000;
     public static final float DRAW_FULL_ARM_THRESHOLD = 0.8f;
@@ -403,6 +406,16 @@ class SoulRenderer {
                 }
             }
         }
+    }
+
+    public void processPreferences(SharedPreferences prefs, Context context) {
+        setShouldBlur(prefs.getBoolean(context.getString(R.string.shouldBlur), true));
+        setShouldScale(prefs.getBoolean(context.getString(R.string.shouldScale), true));
+        setRotationSpeed(prefs.getInt(context.getString(R.string.rotationSpeed), 100) / 100f);
+        setRotationSpeed(prefs.getInt(context.getString(R.string.rotationSpeed), 100) / 100f);
+        changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(context.getString(R.string.drawXferMode), "SRC")));
+        setUseForegroundColor(prefs.getBoolean(context.getString(R.string.useForegroundColor), false));
+        setForegroundColor(prefs.getInt(context.getString(R.string.foregroundColor), 0xff00ff));
     }
 
 }

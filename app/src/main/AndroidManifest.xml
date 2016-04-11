@@ -3,6 +3,9 @@
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.CAMERA"/>
+
+    <uses-feature android:name="android.software.live_wallpaper"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".SoulSeeker"
+            android:name=".SoulSeekerActivity"
             android:label="@string/main_activity"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
@@ -20,21 +23,42 @@
             </intent-filter>
         </activity>
 
-        <service android:label="Smoky"
-                 android:name=".DemoWallpaperService"
-                 android:permission="android.permission.BIND_WALLPAPER">
+        <service
+            android:name=".wallpaper.WallpaperRenderService"
+            android:label="@string/main_activity"
+            android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
+                <action android:name="android.service.wallpaper.WallpaperService"/>
             </intent-filter>
-            <meta-data android:name="android.service.wallpaper"
-                       android:resource="@xml/wallpaper" />
-        </service>
-        <activity android:label="Settings..."
-                  android:name=".WallpaperPrefsActivity"
-                  android:exported="true">
-        </activity>
-    </application>
 
-    <uses-feature android:name="android.software.live_wallpaper" />
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/wallpaper"/>
+        </service>
+
+        <activity
+            android:name=".wallpaper.WallpaperPrefsActivity"
+            android:exported="true"
+            android:label="Settings...">
+        </activity>
+        <activity android:name=".daydream.DaydreamPrefsActivity"
+                  android:exported="true"/> <!-- This service is only used on devices with API v17+ -->
+
+        <service
+            android:name=".daydream.DaydreamRenderService"
+            android:exported="true"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+
+            <!-- Point to additional information for this dream -->
+            <meta-data
+                android:name="android.service.dream"
+                android:resource="@xml/daydream"/>
+        </service>
+    </application>
 
 </manifest>

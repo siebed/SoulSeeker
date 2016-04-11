@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  *
  */
-public final class SoulSeeker extends AppCompatActivity {
+public final class SoulSeekerActivity extends Activity {
     private static final String TAG = "SoulSeeker";
 
     /**

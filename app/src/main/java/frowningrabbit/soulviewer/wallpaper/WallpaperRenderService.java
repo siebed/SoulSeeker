@@ -1,4 +1,4 @@
-package frowningrabbit.soulviewer;
+package frowningrabbit.soulviewer.wallpaper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,7 +10,9 @@ import android.preference.PreferenceManager;
 import android.service.wallpaper.WallpaperService;
 import android.view.SurfaceHolder;
 
-public class DemoWallpaperService extends WallpaperService {
+import frowningrabbit.soulviewer.SoulRenderer;
+
+public class WallpaperRenderService extends WallpaperService {
 
     public static DemoWallpaperEngine wallpaperEngine;
 
@@ -34,7 +36,7 @@ public class DemoWallpaperService extends WallpaperService {
 
         public DemoWallpaperEngine(Context baseContext) {
             renderer = new SoulRenderer(baseContext);
-            processPreferences();
+            renderer.processPreferences(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()),baseContext);
         }
 
 
@@ -94,16 +96,16 @@ public class DemoWallpaperService extends WallpaperService {
         }
 
 
-        private void processPreferences() {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DemoWallpaperService.this);
-            renderer.setShouldBlur(prefs.getBoolean(getString(R.string.shouldBlur), true));
-            renderer.setShouldScale(prefs.getBoolean(getString(R.string.shouldScale), true));
-            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
-            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
-            renderer.changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(getString(R.string.drawXferMode), "SRC")));
-            renderer.setUseForegroundColor(prefs.getBoolean(getString(R.string.useForegroundColor), false));
-            renderer.setForegroundColor(prefs.getInt(getString(R.string.foregroundColor), 0xff00ff));
-        }
+//        private void processPreferences() {
+//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WallpaperRenderService.this);
+//            renderer.setShouldBlur(prefs.getBoolean(getString(R.string.shouldBlur), true));
+//            renderer.setShouldScale(prefs.getBoolean(getString(R.string.shouldScale), true));
+//            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
+//            renderer.setRotationSpeed(prefs.getInt(getString(R.string.rotationSpeed), 100) / 100f);
+//            renderer.changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(getString(R.string.drawXferMode), "SRC")));
+//            renderer.setUseForegroundColor(prefs.getBoolean(getString(R.string.useForegroundColor), false));
+//            renderer.setForegroundColor(prefs.getInt(getString(R.string.foregroundColor), 0xff00ff));
+//        }
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -120,7 +122,8 @@ public class DemoWallpaperService extends WallpaperService {
 //            } else if (key.equalsIgnoreCase(getString(R.string.foregroundColor))) {
 //                foregroundColor = sharedPreferences.getInt(key, 0xff00ff);
 //            }
-            processPreferences();
+//            processPreferences();
+            renderer.processPreferences(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()),getApplicationContext());
 
         }
 
