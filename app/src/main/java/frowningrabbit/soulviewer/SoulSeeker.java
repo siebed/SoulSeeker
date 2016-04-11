@@ -1,18 +1,3 @@
-/*
- * Copyright (C) The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package frowningrabbit.soulviewer;
 
 import android.Manifest;
@@ -25,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -42,15 +26,11 @@ import com.google.android.gms.vision.face.FaceDetector;
 
 import java.io.IOException;
 
-import frowningrabbit.soulviewer.ui.camera.CameraSourcePreview;
-import frowningrabbit.soulviewer.ui.camera.GraphicOverlay;
-
 /**
- * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
- * overlay graphics to indicate the position, size, and ID of each face.
+ *
  */
 public final class SoulSeeker extends AppCompatActivity {
-    private static final String TAG = "FaceTracker";
+    private static final String TAG = "SoulSeeker";
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -113,17 +93,11 @@ public final class SoulSeeker extends AppCompatActivity {
 
     private CameraSource mCameraSource = null;
 
-    private CameraSourcePreview mPreview;
-    private GraphicOverlay mGraphicOverlay;
     private SoulRenderView mSoulView;
 
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
-
-    //==============================================================================================
-    // Activity Methods
-    //==============================================================================================
 
     /**
      * Initializes the UI and initiates the creation of a face detector.
@@ -133,8 +107,6 @@ public final class SoulSeeker extends AppCompatActivity {
         super.onCreate(icicle);
         setContentView(R.layout.main);
 
-        mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
         mSoulView = (SoulRenderView) findViewById(R.id.soulRenderView);
 
         // Check for the camera permission before accessing the camera.  If the
@@ -146,7 +118,7 @@ public final class SoulSeeker extends AppCompatActivity {
             requestCameraPermission();
         }
 
-        mContentView = findViewById(R.id.topLayout);
+        mContentView = findViewById(R.id.soulRenderView);
 
         // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
@@ -190,10 +162,10 @@ public final class SoulSeeker extends AppCompatActivity {
             }
         };
 
-        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
-                Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.ok, listener)
-                .show();
+//        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
+//                Snackbar.LENGTH_INDEFINITE)
+//                .setAction(R.string.ok, listener)
+//                .show();
     }
 
     /**
@@ -248,7 +220,7 @@ public final class SoulSeeker extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mPreview.stop();
+        mCameraSource.stop();
         mSoulView.pause();
     }
 
@@ -311,10 +283,6 @@ public final class SoulSeeker extends AppCompatActivity {
                 .show();
     }
 
-    //==============================================================================================
-    // Camera Source Preview
-    //==============================================================================================
-
     /**
      * Starts or restarts the camera source, if it exists.  If the camera source doesn't exist yet
      * (e.g., because onResume was called before the camera source was created), this will be called
@@ -333,7 +301,7 @@ public final class SoulSeeker extends AppCompatActivity {
 
         if (mCameraSource != null) {
             try {
-                mPreview.start(mCameraSource, mGraphicOverlay);
+                mCameraSource.start();
             } catch (IOException e) {
                 Log.e(TAG, "Unable to start camera source.", e);
                 mCameraSource.release();
@@ -353,7 +321,7 @@ public final class SoulSeeker extends AppCompatActivity {
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            return new GraphicFaceTracker(mGraphicOverlay, mSoulView);
+            return new GraphicFaceTracker(mSoulView);
         }
     }
 
@@ -362,13 +330,9 @@ public final class SoulSeeker extends AppCompatActivity {
      * associated face overlay.
      */
     private class GraphicFaceTracker extends Tracker<Face> {
-        private GraphicOverlay mOverlay;
-        private FaceGraphic mFaceGraphic;
         private SoulRenderView soulView;
 
-        GraphicFaceTracker(GraphicOverlay overlay, SoulRenderView soulRenderView) {
-            mOverlay = overlay;
-            mFaceGraphic = new FaceGraphic(overlay);
+        GraphicFaceTracker(SoulRenderView soulRenderView) {
             soulView = soulRenderView;
         }
 
@@ -377,7 +341,6 @@ public final class SoulSeeker extends AppCompatActivity {
          */
         @Override
         public void onNewItem(int faceId, Face item) {
-            mFaceGraphic.setId(faceId);
         }
 
         /**
@@ -385,8 +348,6 @@ public final class SoulSeeker extends AppCompatActivity {
          */
         @Override
         public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
-            mOverlay.add(mFaceGraphic);
-            mFaceGraphic.updateFace(face);
             soulView.getThread().setMoodIndex(face.getIsSmilingProbability());
             soulView.getThread().setDrawLeftArm(face.getIsLeftEyeOpenProbability());
             soulView.getThread().setDrawRightArm(face.getIsRightEyeOpenProbability());
@@ -400,7 +361,6 @@ public final class SoulSeeker extends AppCompatActivity {
          */
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
-            mOverlay.remove(mFaceGraphic);
         }
 
         /**
@@ -409,11 +369,9 @@ public final class SoulSeeker extends AppCompatActivity {
          */
         @Override
         public void onDone() {
-            mOverlay.remove(mFaceGraphic);
             soulView.getThread().setToNeutral();
         }
     }
-
 
 
     private void toggle() {

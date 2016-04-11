@@ -27,8 +27,6 @@ class SoulRenderer {
     public static final int RENDER_DIVIDER = 4;
     public static final PorterDuff.Mode DEFAULT_XFER_MODE = PorterDuff.Mode.LIGHTEN;
 
-
-    private final Context mContext;
     private int[][] pixelColors;
     private int[] pixels;
     private int originalWidth;
@@ -143,23 +141,14 @@ class SoulRenderer {
         public Canvas canvas;
     }
 
-
-    /**
-     * Handle to the surface manager object we interact with
-     */
-
     public SoulRenderer(Context context) {
-        // get handles to some important objects
-        mContext = context;
-
-//            processPreferences();
-        initializeData();
+        initializeData(context);
         make3DBrownian();
         initColor();
         startTime = System.currentTimeMillis();
     }
 
-    public void initializeData() {
+    public void initializeData(Context context) {
         colorCounter = Math.random() * 6000; //start with a random color
         coral = new int[PARTICALS][3];
         drawPointsX = new int[2 * PARTICALS];
@@ -175,12 +164,11 @@ class SoulRenderer {
         paint.setStrokeWidth(scaleFactor);
         setXferMode();
 
-        rs = RenderScript.create(mContext);
+        rs = RenderScript.create(context);
         theIntrinsic = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
     }
 
     private void setXferMode() {
-//        paint.setXfermode(new PorterDuffXfermode(porterDuffMode));
         blendPaint.setXfermode(new PorterDuffXfermode(porterDuffMode));
     }
 
@@ -394,7 +382,7 @@ class SoulRenderer {
             finalY = (int) (newy);
             finalZ = (int) ((newz * cosY) - (newx * sinY));
 
-            int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 4 : 8; // Reduce luminus a bit when xfer mode is "ADD"
+            int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 6 : 8; // Reduce luminus a bit when xfer mode is "ADD"
             if (centerX - Math.abs(finalX) > 0 && centerY - Math.abs(finalY) > 0) {
                 if (drawLeftArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawLeftArm) % 1f < drawLeftArm)) {
                     if (pixelColors[centerX + finalX][centerY + finalY] == 0) {
