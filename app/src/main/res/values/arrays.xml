@@ -29,14 +29,11 @@
         <item>6</item>
     </string-array>
 
-    <integer-array name="detailListValues">
+    <string-array name="detailListValues">
         <item>1</item>
         <item>2</item>
         <item>4</item>
         <item>16</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-    </integer-array>
+    </string-array>
 
 </resources>

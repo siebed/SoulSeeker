@@ -15,6 +15,7 @@
     <string name="rotationSpeed">rotationSpeed</string>
     <string name="useForegroundColor">useForegroundColor</string>
     <string name="foregroundColor">foregroundColor</string>
+    <string name="foregroundColorHex">foregroundColorHex</string>
     <string name="drawXferMode">drawXFerMode</string>
     <string name="renderDetail">renderDetail</string>
     <string name="dialog_color_picker">Color Picker</string>

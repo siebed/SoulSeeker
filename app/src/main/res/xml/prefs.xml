@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <CheckBoxPreference
+    <SwitchPreference
         android:defaultValue="true"
         android:key="@string/shouldBlur"
         android:title="Blur"/>
 
-    <CheckBoxPreference
+    <SwitchPreference
         android:defaultValue="true"
         android:key="@string/shouldScale"
         android:title="Mist tunnel effect"/>
@@ -20,18 +20,18 @@
         android:text="%"
         android:title="Rotation speed"/>
 
-    <CheckBoxPreference
+    <SwitchPreference
         android:defaultValue="true"
         android:key="@string/useForegroundColor"
         android:summary="Use a single color for the coral "
         android:title="Use single color"/>
 
-    <net.margaritov.preference.colorpicker.ColorPickerPreference
-        alphaSlider="false"
-        android:defaultValue="@color/colorPrimaryDark"
-        android:key="@string/foregroundColor"
-        android:summary="@string/color1_summary"
-        android:title="@string/color1_title"/>
+    <EditTextPreference
+        android:defaultValue="#FF4D00"
+        android:key="@string/foregroundColorHex"
+        android:summary="Color in Hex value (i.e. #FF4D00)"
+        android:title="@string/color1_title"
+        />
 
     <PreferenceCategory android:title="Advanced knobs and dials">
         <ListPreference
@@ -43,9 +43,9 @@
             android:title="Pixel draw mode"/>
 
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="4"
             android:entries="@array/detailOptions"
-            android:entryValues="@array/listValues"
+            android:entryValues="@array/detailListValues"
             android:key="@string/renderDetail"
             android:summary="Current: %s"
             android:title="Output Detail"/>

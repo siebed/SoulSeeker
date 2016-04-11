@@ -36,6 +36,8 @@ public class SoulRenderer {
     private int originalHeight;
     private int renderWidth;
     private int renderHeight;
+    private int renderDetail = RENDER_DIVIDER;
+    private int newRenderDetail = RENDER_DIVIDER ;
     private int[][] coral;
     private int[] drawPointsX;
     private int[] drawPointsY;
@@ -203,10 +205,23 @@ public class SoulRenderer {
     public void setSurfaceSize(int width, int height) {
         originalWidth = width;
         originalHeight = height;
-        renderWidth = originalWidth / RENDER_DIVIDER;
-        renderHeight = originalHeight / RENDER_DIVIDER;
+        reinitSurfaceValues();
+    }
+
+    private void reinitSurfaceValues() {
+        renderWidth = originalWidth / renderDetail;
+        renderHeight = originalHeight / renderDetail;
         pixelColors = new int[renderWidth][renderHeight];
         pixels = new int[renderWidth * renderHeight];
+        if(sourceBuffer.bitmap != null) {
+            sourceBuffer.bitmap.recycle();
+        }
+        if(destinationBuffer.bitmap != null) {
+            destinationBuffer.bitmap.recycle();
+        }
+        if(blendBitmap != null) {
+            blendBitmap.recycle();
+        }
         sourceBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         destinationBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         blendBitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888);
@@ -219,6 +234,8 @@ public class SoulRenderer {
         scaleSubRect = new Rect(xScaleOffset, yScaleOffset, renderWidth - xScaleOffset, renderHeight - yScaleOffset);
 
         frameTime = System.currentTimeMillis();
+
+        drawPointsCounter = 0;
     }
 
 
@@ -228,6 +245,11 @@ public class SoulRenderer {
     public void doDraw(Canvas canvas) {
         if (canvas == null) {
             return;
+        }
+
+        if(newRenderDetail != renderDetail) {
+            renderDetail = newRenderDetail;
+            reinitSurfaceValues();
         }
         StringBuilder timingString = new StringBuilder("[Rendertime] ");
 
@@ -415,7 +437,14 @@ public class SoulRenderer {
         setRotationSpeed(prefs.getInt(context.getString(R.string.rotationSpeed), 100) / 100f);
         changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(context.getString(R.string.drawXferMode), "SRC")));
         setUseForegroundColor(prefs.getBoolean(context.getString(R.string.useForegroundColor), false));
-        setForegroundColor(prefs.getInt(context.getString(R.string.foregroundColor), 0xff00ff));
+        String foregroundCol = prefs.getString(context.getString(R.string.foregroundColorHex), "FF4D00");
+        setForegroundColor(Color.parseColor("#" + foregroundCol.replace("#", "")));
+//        setForegroundColor(prefs.getInt(context.getString(R.string.foregroundColor), 0xff00ff));
+        int detail = Integer.parseInt(prefs.getString(context.getString(R.string.renderDetail), "2"));
+        if(detail != renderDetail) {
+            newRenderDetail = detail;
+        }
+
     }
 
 }
