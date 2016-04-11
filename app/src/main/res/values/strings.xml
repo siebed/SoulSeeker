@@ -20,4 +20,8 @@
     <string name="dialog_color_picker">Color Picker</string>
     <string name="press_color_to_apply">Press on Color to apply</string>
 
+    <!-- Preferences -->
+    <string name="pref_category">Category</string>
+    <string name="color1_title">Color</string>
+    <string name="color1_summary">Color to use for the coral</string>
 </resources>

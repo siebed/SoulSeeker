@@ -220,7 +220,9 @@ public final class SoulSeekerActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraSource.stop();
+        if (mCameraSource != null) {
+            mCameraSource.stop();
+        }
         mSoulView.pause();
     }
 
