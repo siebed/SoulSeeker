@@ -29,7 +29,7 @@
     <EditTextPreference
         android:defaultValue="#FF4D00"
         android:key="@string/foregroundColorHex"
-        android:summary="Color in Hex value (i.e. #FF4D00)"
+        android:summary="Color in Hex value (e.g. #FF4D00)"
         android:title="@string/color1_title"
         />
 

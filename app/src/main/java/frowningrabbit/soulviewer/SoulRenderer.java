@@ -354,8 +354,7 @@ public class SoulRenderer {
     private void initColor() {
 
         if (!useForegroundColor) {
-            //we make the brightness dependant on the mood. Happier means brighter
-            startIntensity = moodIndex > FULL_MOOD_THRESHOLD ? 128 : (int) (Math.max(NO_MOOD_THRESHOLD, moodIndex * 1.6f) * 128);
+            startIntensity = 128;
             endIntensity = 2 * startIntensity;
             red = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter++ / 150))));
             green = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter / 80))));
@@ -383,6 +382,7 @@ public class SoulRenderer {
     int centerX, centerY;
     int finalX, finalY, finalZ;
     int drawPointsCounter;
+    int luminus;
 
     /**
      * Rotate our structure around the center point given an x and y angle. The final position of each
@@ -414,10 +414,10 @@ public class SoulRenderer {
             finalY = (int) (newy);
             finalZ = (int) ((newz * cosY) - (newx * sinY));
 
-            int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 6 : 8; // Reduce luminus a bit when xfer mode is "ADD"
+            luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 6 : 12; // Reduce luminus a bit when xfer mode is "ADD"
 
             if (moodIsSet) {
-                luminus += (moodIndex * 4); //increase a bit depending on users happiness
+                luminus += (moodIndex * 8); //increase a bit depending on users happiness
             }
 
             if (centerX - Math.abs(finalX) > 0 && centerY - Math.abs(finalY) > 0) {
