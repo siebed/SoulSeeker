@@ -11,6 +11,10 @@ The structure that is rendered is created by simulating brownian motion to creat
 
 
 ## More Info
+If you are curious, here is a screenshot of the app running:
+[[https://github.com/siebed/SoulSeeker/blob/master/screenshot_full.png|alt=app running]]
+[[https://github.com/siebed/SoulSeeker/blob/master/screenshot_custom.png|alt=app running with custom settings]]
+
 you can see it in action here:
 
 [running on several devices](https://youtu.be/zVoKHC7ecvI) 
