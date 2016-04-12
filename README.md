@@ -17,5 +17,6 @@ If you are curious, here is a screenshot of the app running:
 
 You can see it in action here:
 
-[running on several devices](https://youtu.be/zVoKHC7ecvI) 
+[running on several devices](https://youtu.be/zVoKHC7ecvI)
+
 [running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
