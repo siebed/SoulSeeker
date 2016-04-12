@@ -12,6 +12,7 @@ The structure that is rendered is created by simulating brownian motion to creat
 
 ## More Info
 you can see it in action here:
+
 [running on several devices](https://youtu.be/zVoKHC7ecvI) 
 
 [running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
