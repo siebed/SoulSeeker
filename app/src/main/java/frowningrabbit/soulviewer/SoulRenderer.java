@@ -1,6 +1,5 @@
 package frowningrabbit.soulviewer;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,13 +9,10 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.preference.PreferenceManager;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
-import android.support.v8.renderscript.ScriptIntrinsicResize;
-import android.util.Log;
 
 import java.util.Arrays;
 
@@ -37,39 +33,32 @@ public class SoulRenderer {
     private int renderWidth;
     private int renderHeight;
     private int renderDetail = RENDER_DIVIDER;
-    private int newRenderDetail = RENDER_DIVIDER ;
+    private int newRenderDetail = RENDER_DIVIDER;
     private int[][] coral;
     private int[] drawPointsX;
     private int[] drawPointsY;
-    private float scaleRate = 1.2f;
+    private float scaleRate = 1.2f; //rate at which we scale previous frames
     double colorCounter = 300;
     int[] colorPallet = new int[256];
     double radius = 1.5;
     int intx = 0;
     int inty = 0;
     int intz = 0;
-    float scaleFactor = 1;
     long startTime;
     long frameTime;
-    long timingStart, timingEnd;
-    int frames = 0;
-    long cumuTime = 0;
 
     //vars controlled by prefs
     private boolean shouldBlur = true;
-    private boolean shouldScale = true;
     private boolean useForegroundColor;
     private int foregroundColor;
     private float rotationSpeed = 1f;
 
 
-
-    float drawLeftArm = 1f;
+    float drawLeftArm = 1f; //What percentage of the arm we draw
     float drawRightArm = 1f;
     private SurfaceInfo sourceBuffer = new SurfaceInfo();
     private SurfaceInfo destinationBuffer = new SurfaceInfo();
     private SurfaceInfo drawlessBuffer = new SurfaceInfo(); //Buffer we keep for when we detect nothing. Without it the smoke would not fade out (and in)
-    private Paint paint;
     private Paint blendPaint; //paint for blending the drawing into the frame
     private Paint centerPointpaint; //paint for making a dot in the middle of the screen. This gives a better scaling effect
     RenderScript rs;
@@ -100,7 +89,7 @@ public class SoulRenderer {
         if (moodIndex > 0 && (this.moodIndex == 0 || Math.abs(this.moodIndex - moodIndex) > 0.1f)) {
             this.moodIsSet = true;
             this.moodIndex = Math.abs(moodIndex);
-            if(moodIndex > 0.35) {
+            if (moodIndex > 0.35) {
                 changeXferMode(PorterDuff.Mode.ADD);
             } else {
                 changeXferMode(DEFAULT_XFER_MODE);
@@ -127,7 +116,7 @@ public class SoulRenderer {
     }
 
     public void setShouldScale(boolean shouldScale) {
-        this.shouldScale = shouldScale;
+        moodIndex = shouldScale ? 1 : 0; //We stop or start the smoke with the mood setting
     }
 
     public void setUseForegroundColor(boolean useForegroundColor) {
@@ -171,9 +160,6 @@ public class SoulRenderer {
         centerPointpaint.setStrokeWidth(8);
 
         blendPaint = new Paint();
-
-        paint = new Paint();
-        paint.setStrokeWidth(scaleFactor);
         setXferMode();
 
         rs = RenderScript.create(context);
@@ -220,23 +206,28 @@ public class SoulRenderer {
         renderHeight = originalHeight / renderDetail;
         pixelColors = new int[renderWidth][renderHeight];
         pixels = new int[renderWidth * renderHeight];
-        if(sourceBuffer.bitmap != null) {
+
+        //recycle our bitmaps if needed
+        if (sourceBuffer.bitmap != null) {
             sourceBuffer.bitmap.recycle();
         }
-        if(destinationBuffer.bitmap != null) {
+        if (destinationBuffer.bitmap != null) {
             destinationBuffer.bitmap.recycle();
         }
-        if(blendBitmap != null) {
+        if (blendBitmap != null) {
             blendBitmap.recycle();
         }
-        if(drawlessBuffer.bitmap != null) {
+        if (drawlessBuffer.bitmap != null) {
             drawlessBuffer.bitmap.recycle();
         }
+
+        //create bitmaps for the current screen size
         sourceBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         destinationBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         drawlessBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         blendBitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888);
 
+        //Create rectangles to make copies from bitmap to bitmap
         sourceRect = new Rect(0, 0, renderWidth, renderHeight);
         destCanvasRect = new Rect(0, 0, originalWidth, originalHeight);
 
@@ -244,8 +235,8 @@ public class SoulRenderer {
         int yScaleOffset = (int) (renderHeight - (renderHeight / scaleRate)) / 2;
         scaleSubRect = new Rect(xScaleOffset, yScaleOffset, renderWidth - xScaleOffset, renderHeight - yScaleOffset);
 
+        //reset needed fields
         frameTime = System.currentTimeMillis();
-
         drawPointsCounter = 0;
     }
 
@@ -258,23 +249,21 @@ public class SoulRenderer {
             return;
         }
 
-        if(newRenderDetail != renderDetail) {
+        //recreate al data if user tinkered with the settings
+        if (newRenderDetail != renderDetail) {
             renderDetail = newRenderDetail;
             reinitSurfaceValues();
         }
-        StringBuilder timingString = new StringBuilder("[Rendertime] ");
 
-        frames++;
-
-        if(moodIndex == 0) {
+        if (moodIndex == 0) {
             //we skip 1 frame, as we need the moodlessBuffer to be filled first with a frame
-            if(moodlessCounter > 0) {
+            if (moodlessCounter > 0) {
                 //at the start we draw in the middle to prevent scaling artifacts
-                if(moodlessCounter > 5 && moodlessCounter < 15) {
+                if (moodlessCounter > 5 && moodlessCounter < 15) {
                     drawlessBuffer.canvas.drawCircle(renderWidth / 2, renderHeight / 2, 10, centerPointpaint);
                 }
                 //after a while just make everything black
-                if(moodlessCounter > 100) {
+                if (moodlessCounter > 100) {
                     sourceBuffer.canvas.drawColor(Color.BLACK);
                 } else {
                     sourceBuffer.canvas.drawBitmap(drawlessBuffer.bitmap, 0, 0, null);
@@ -284,24 +273,15 @@ public class SoulRenderer {
             moodlessCounter++;
         }
 
-        if (shouldScale) {
-            timingStart = System.currentTimeMillis();
-            scale(sourceBuffer, destinationBuffer);
-            swapBufferRefs();
-            timingEnd = System.currentTimeMillis();
-            timingString.append(" scale: " + (timingEnd - timingStart));
-        }
+        scale(sourceBuffer, destinationBuffer);
+        swapBufferRefs();
 
         //we copy the scaled version without any new drawing into our buffer for the next frame
-        if(moodIndex == 0) {
+        if (moodIndex == 0) {
             drawlessBuffer.canvas.drawBitmap(sourceBuffer.bitmap, 0, 0, null);
         }
 
-
-        timingStart = timingEnd;
         rotateCoral(radius, radius * 2.72);
-        timingEnd = System.currentTimeMillis();
-        timingString.append(" rotateCoral: " + (timingEnd - timingStart));
 
         //If mood is set rotation is more active, like an excited puppy ;)
         if (moodIsSet) {
@@ -311,37 +291,17 @@ public class SoulRenderer {
         }
         frameTime = System.currentTimeMillis();
 
-        timingStart = timingEnd;
         initColor();
-        timingEnd = System.currentTimeMillis();
-        timingString.append(" initColor: " + (timingEnd - timingStart));
 
-        timingStart = timingEnd;
         renderColors(sourceBuffer);
-        timingEnd = System.currentTimeMillis();
-        timingString.append(" renderColors: " + (timingEnd - timingStart));
 
         if (shouldBlur) {
             //switch the buffers
-            timingStart = System.currentTimeMillis();
             blur(sourceBuffer, destinationBuffer);
-            timingEnd = System.currentTimeMillis();
-            timingString.append(" blur: " + (timingEnd - timingStart));
             swapBufferRefs();
         }
 
-
-        timingStart = System.currentTimeMillis();
         canvas.drawBitmap(sourceBuffer.bitmap, sourceRect, destCanvasRect, null);
-        timingEnd = System.currentTimeMillis();
-        timingString.append(" canvas.drawBitmap: " + (timingEnd - timingStart));
-
-        //switch the buffers, so we add to the final version next iteration
-//        swapBufferRefs();
-
-        cumuTime += System.currentTimeMillis() - startTime;
-//        Log.i("draw average", "" + (cumuTime / frames));
-        Log.i("timing", timingString.toString());
     }
 
     private void swapBufferRefs() {
@@ -382,16 +342,20 @@ public class SoulRenderer {
     }
 
 
+    int startIntensity;
+    int red, green, blue;
+    int endIntensity = 256;
+
     /**
      * Init the color pallet for this frame. Depending on 'useForegroundColor' it will cycle through all colors of the spectrum
      * or a set foreground color. To give the effect of glowing particles the color will go from black to a set color to white.
      * The higher the startIntensity the brighter the colours will be.
      */
     private void initColor() {
-        int red, green, blue;
-        int endIntensity = 256;
+
         if (!useForegroundColor) {
-            int startIntensity = moodIndex > FULL_MOOD_THRESHOLD ? 128 : (int) (Math.max(NO_MOOD_THRESHOLD, moodIndex * 1.6f) * 128);
+            //we make the brightness dependant on the mood. Happier means brighter
+            startIntensity = moodIndex > FULL_MOOD_THRESHOLD ? 128 : (int) (Math.max(NO_MOOD_THRESHOLD, moodIndex * 1.6f) * 128);
             endIntensity = 2 * startIntensity;
             red = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter++ / 150))));
             green = Math.max(0, (int) (startIntensity + (127 * Math.cos(colorCounter / 80))));
@@ -410,6 +374,8 @@ public class SoulRenderer {
                     (green + (((endIntensity - green) * i) / 128)),
                     (blue + (((endIntensity - blue) * i) / 128)));
         }
+
+        endIntensity = 256;
     }
 
     double cosX, sinX, cosY, sinY;
@@ -418,6 +384,13 @@ public class SoulRenderer {
     int finalX, finalY, finalZ;
     int drawPointsCounter;
 
+    /**
+     * Rotate our structure around the center point given an x and y angle. The final position of each
+     * particle is used to add intensity of the color at that point of the screen, creating a 'glowing' effect.
+     * Depending on the information about possible eyes and how far they are closed we draw only part
+     * of the corresponding 'arm' of the structure.
+     * For speed optimisation we keep track of which coordinates we draw to so we don't have to touch the whole bitmap every time.
+     */
     private void rotateCoral(double angelX, double angelY) {
         centerX = renderWidth / 2;
         centerY = renderHeight / 2;
@@ -443,7 +416,7 @@ public class SoulRenderer {
 
             int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 6 : 8; // Reduce luminus a bit when xfer mode is "ADD"
 
-            if(moodIsSet) {
+            if (moodIsSet) {
                 luminus += (moodIndex * 4); //increase a bit depending on users happiness
             }
 
@@ -478,9 +451,8 @@ public class SoulRenderer {
         setUseForegroundColor(prefs.getBoolean(context.getString(R.string.useForegroundColor), false));
         String foregroundCol = prefs.getString(context.getString(R.string.foregroundColorHex), "FF4D00");
         setForegroundColor(Color.parseColor("#" + foregroundCol.replace("#", "")));
-//        setForegroundColor(prefs.getInt(context.getString(R.string.foregroundColor), 0xff00ff));
         int detail = Integer.parseInt(prefs.getString(context.getString(R.string.renderDetail), "2"));
-        if(detail != renderDetail) {
+        if (detail != renderDetail) {
             newRenderDetail = detail;
         }
 
