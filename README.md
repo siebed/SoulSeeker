@@ -15,8 +15,7 @@ If you are curious, here is a screenshot of the app running:
 ![app running](screenshot_full.png)
 ![app running with custom settings](screenshot_custom.png)
 
-you can see it in action here:
+You can see it in action here:
 
 [running on several devices](https://youtu.be/zVoKHC7ecvI) 
-
 [running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
