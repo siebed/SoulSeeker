@@ -7,7 +7,7 @@ It simulates glowing particles by first calculating the accumalted luminens of t
 The color pallet changes colors constantly by cycling through R,G,B channels.
 By using both scaling and bluring using RenderScript it creates a smoke like effect.
 
-The structure that is rendered is created by simulating brownian motion to create a particle structure. The structure is then mirrored and will rotate slowly around its center point. in its starting point 
+The structure that is rendered is created by simulating brownian motion to create a particle structure. The structure is then mirrored and will rotate slowly around its center point.
 
 
 ## More Info
