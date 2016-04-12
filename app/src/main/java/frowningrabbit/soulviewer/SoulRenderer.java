@@ -447,11 +447,11 @@ public class SoulRenderer {
         setShouldScale(prefs.getBoolean(context.getString(R.string.shouldScale), true));
         setRotationSpeed(prefs.getInt(context.getString(R.string.rotationSpeed), 100) / 100f);
         setRotationSpeed(prefs.getInt(context.getString(R.string.rotationSpeed), 100) / 100f);
-        changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(context.getString(R.string.drawXferMode), "SRC")));
+        changeXferMode(PorterDuff.Mode.valueOf(prefs.getString(context.getString(R.string.drawXferMode), "LIGHTEN")));
         setUseForegroundColor(prefs.getBoolean(context.getString(R.string.useForegroundColor), false));
         String foregroundCol = prefs.getString(context.getString(R.string.foregroundColorHex), "FF4D00");
         setForegroundColor(Color.parseColor("#" + foregroundCol.replace("#", "")));
-        int detail = Integer.parseInt(prefs.getString(context.getString(R.string.renderDetail), "2"));
+        int detail = Integer.parseInt(prefs.getString(context.getString(R.string.renderDetail), "4"));
         if (detail != renderDetail) {
             newRenderDetail = detail;
         }
