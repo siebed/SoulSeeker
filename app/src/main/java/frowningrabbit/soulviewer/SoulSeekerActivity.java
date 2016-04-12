@@ -108,6 +108,7 @@ public final class SoulSeekerActivity extends Activity {
         setContentView(R.layout.main);
 
         mSoulView = (SoulRenderView) findViewById(R.id.soulRenderView);
+        mSoulView.getThread().setToNeutral();
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.

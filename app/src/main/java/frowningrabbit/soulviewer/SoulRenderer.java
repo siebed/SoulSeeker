@@ -68,13 +68,15 @@ public class SoulRenderer {
     float drawRightArm = 1f;
     private SurfaceInfo sourceBuffer = new SurfaceInfo();
     private SurfaceInfo destinationBuffer = new SurfaceInfo();
+    private SurfaceInfo drawlessBuffer = new SurfaceInfo(); //Buffer we keep for when we detect nothing. Without it the smoke would not fade out (and in)
     private Paint paint;
-    private Paint blendPaint;
-    private Paint centerPointpaint;
+    private Paint blendPaint; //paint for blending the drawing into the frame
+    private Paint centerPointpaint; //paint for making a dot in the middle of the screen. This gives a better scaling effect
     RenderScript rs;
-    private ScriptIntrinsicBlur theIntrinsic;
-    private boolean moodIsSet = false;
-    private float moodIndex = 1;
+    private ScriptIntrinsicBlur theIntrinsic; //used for blurring the frame
+    private boolean moodIsSet = false; //wether or not we are detecting a mood
+    private float moodIndex = 1; //how happy is the user
+    private int moodlessCounter = 0; //counter to keep track of the frames without a detected mood
     private Rect sourceRect;
     private Rect destCanvasRect;
     private Rect scaleSubRect;
@@ -95,10 +97,14 @@ public class SoulRenderer {
 
     public void setMoodIndex(float moodIndex) {
         //only react on 'mood swings'
-        if (moodIndex > 0 && Math.abs(this.moodIndex - moodIndex) > 0.1f) {
+        if (moodIndex > 0 && (this.moodIndex == 0 || Math.abs(this.moodIndex - moodIndex) > 0.1f)) {
             this.moodIsSet = true;
             this.moodIndex = Math.abs(moodIndex);
-            changeXferMode(PorterDuff.Mode.ADD);
+            if(moodIndex > 0.35) {
+                changeXferMode(PorterDuff.Mode.ADD);
+            } else {
+                changeXferMode(DEFAULT_XFER_MODE);
+            }
         }
     }
 
@@ -109,7 +115,8 @@ public class SoulRenderer {
 
     public void setToNeutral() {
         moodIsSet = false;
-        moodIndex = 1;
+        moodIndex = 0;
+        moodlessCounter = 0;
         drawLeftArm = 1f;
         drawRightArm = 1f;
         changeXferMode(DEFAULT_XFER_MODE);
@@ -222,8 +229,12 @@ public class SoulRenderer {
         if(blendBitmap != null) {
             blendBitmap.recycle();
         }
+        if(drawlessBuffer.bitmap != null) {
+            drawlessBuffer.bitmap.recycle();
+        }
         sourceBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         destinationBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
+        drawlessBuffer.setBitmap(Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888));
         blendBitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888);
 
         sourceRect = new Rect(0, 0, renderWidth, renderHeight);
@@ -255,12 +266,35 @@ public class SoulRenderer {
 
         frames++;
 
+        if(moodIndex == 0) {
+            //we skip 1 frame, as we need the moodlessBuffer to be filled first with a frame
+            if(moodlessCounter > 0) {
+                //at the start we draw in the middle to prevent scaling artifacts
+                if(moodlessCounter > 5 && moodlessCounter < 15) {
+                    drawlessBuffer.canvas.drawCircle(renderWidth / 2, renderHeight / 2, 10, centerPointpaint);
+                }
+                //after a while just make everything black
+                if(moodlessCounter > 100) {
+                    sourceBuffer.canvas.drawColor(Color.BLACK);
+                } else {
+                    sourceBuffer.canvas.drawBitmap(drawlessBuffer.bitmap, 0, 0, null);
+                }
+
+            }
+            moodlessCounter++;
+        }
+
         if (shouldScale) {
             timingStart = System.currentTimeMillis();
             scale(sourceBuffer, destinationBuffer);
             swapBufferRefs();
             timingEnd = System.currentTimeMillis();
             timingString.append(" scale: " + (timingEnd - timingStart));
+        }
+
+        //we copy the scaled version without any new drawing into our buffer for the next frame
+        if(moodIndex == 0) {
+            drawlessBuffer.canvas.drawBitmap(sourceBuffer.bitmap, 0, 0, null);
         }
 
 
@@ -408,6 +442,11 @@ public class SoulRenderer {
             finalZ = (int) ((newz * cosY) - (newx * sinY));
 
             int luminus = PorterDuff.Mode.ADD.equals(porterDuffMode) ? 6 : 8; // Reduce luminus a bit when xfer mode is "ADD"
+
+            if(moodIsSet) {
+                luminus += (moodIndex * 4); //increase a bit depending on users happiness
+            }
+
             if (centerX - Math.abs(finalX) > 0 && centerY - Math.abs(finalY) > 0) {
                 if (drawLeftArm > DRAW_FULL_ARM_THRESHOLD || (drawLeftArm > DRAW_NO_ARM_THRESHOLD && (i * drawLeftArm) % 1f < drawLeftArm)) {
                     if (pixelColors[centerX + finalX][centerY + finalY] == 0) {
