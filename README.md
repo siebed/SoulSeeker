@@ -7,17 +7,16 @@ It simulates glowing particles by first calculating the accumalted luminens of t
 The color pallet changes colors constantly by cycling through R,G,B channels.
 By using both scaling and bluring using RenderScript it creates a smoke like effect.
 
-The structure that is rendered is created by simulating brownian motion to create a particle structure. The structure is then mirrored and will rotate slowly around its center point. in its starting point 
+The structure that is rendered is created by simulating brownian motion to create a particle structure. The structure is then mirrored and will rotate slowly around its center point.
 
 
 ## More Info
 If you are curious, here is a screenshot of the app running:
 ![app running](screenshot_full.png)
-[[https://github.com/siebed/SoulSeeker/blob/master/screenshot_full.png|alt=app running]]
-[[https://github.com/siebed/SoulSeeker/blob/master/screenshot_custom.png|alt=app running with custom settings]]
+![app running with custom settings](screenshot_custom.png)
 
-you can see it in action here:
+You can see it in action here:
 
-[running on several devices](https://youtu.be/zVoKHC7ecvI) 
+[running on several devices](https://youtu.be/zVoKHC7ecvI)
 
 [running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
