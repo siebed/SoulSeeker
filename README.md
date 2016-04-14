@@ -48,3 +48,6 @@ You can see it in action here:
 [running on several devices](https://youtu.be/zVoKHC7ecvI)
 
 [running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=LMCs4JYlrJw
+" target="_blank"><img src="http://img.youtube.com/vi/LMCs4JYlrJw/0.jpg" 
+alt="running as a Daydream with custom settings" width="240" height="180" border="10" /></a>
