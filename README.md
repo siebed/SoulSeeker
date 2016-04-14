@@ -39,7 +39,8 @@ Definitely not coming:
 ## More Info
 If you are curious, here is a screenshot of the app running:
 ![app running](screenshot_full.png)
-Daydream running with custom settings (no blur, no smoke, details: 80s pixels): 
+
+Daydream running with custom settings (no blur, no smoke, details: 80s pixels):
 ![app running with custom settings](screenshot_custom.png)
 
 You can see it in action here:
