@@ -20,18 +20,27 @@ Opening and closing year left or right eye will also influence parts of the smok
 
 Still to come:
 • Blinking will instantly change the color
+
 • More settings to tinker with in the Wallpaper and Daydream
+
 • Presets in the settings for when all the options are a bit overwhelming
+
 
 Possibly coming:
 • OpenGL version.
+
 • Or maybe even Vulken version. I mean, 'Vulkan', it just sounds better, so it must be better as well. Always pick the better sounding technology. It just makes sense.
+
 • An Android Wear watch version. Should not be too hard. We just make it all a bit smaller. Probably by making all the bits and bytes more tiny? That's how it works I think. Or just move all the code further away from me, that usually makes things look smaller.
+
 
 Definitely not coming:
 • Plugins. Specifically those written by owls. You know how they can look at you with those big eyes, and you sort of are unable to say 'no'? Well I practiced. Cardboard cutout of an owl and all. I'm definitely going to say 'no', I'm sure of it....
+
 • The color 'khaki'. I tried though. Can't get it in there. No idea why.
+
 • OK, so, definitely not more than one or two owl plugins. How do they get in here anyway?
+
 
 ## More Info
 If you are curious, here is a screenshot of the app running:
