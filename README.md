@@ -45,9 +45,13 @@ Daydream running with custom settings (no blur, no smoke, details: 80s pixels):
 
 You can see it in action here:
 
-[running on several devices](https://youtu.be/zVoKHC7ecvI)
+[Running on several devices](https://youtu.be/zVoKHC7ecvI)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=zVoKHC7ecvI
+" target="_blank"><img src="http://img.youtube.com/vi/zVoKHC7ecvI/0.jpg" 
+alt="Running on several devices" width="480" height="270" border="10" /></a>
 
-[running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
+[Running as a Daydream with custom settings] (https://youtu.be/LMCs4JYlrJw)
+
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=LMCs4JYlrJw
 " target="_blank"><img src="http://img.youtube.com/vi/LMCs4JYlrJw/0.jpg" 
-alt="running as a Daydream with custom settings" width="240" height="180" border="10" /></a>
+alt="running as a Daydream with custom settings" width="480" height="270" border="10" /></a>
