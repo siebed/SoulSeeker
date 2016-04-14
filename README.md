@@ -19,11 +19,9 @@ Opening and closing year left or right eye will also influence parts of the smok
 ## Roadmap
 
 Still to come:
-• Blinking will instantly change the color
-
-• More settings to tinker with in the Wallpaper and Daydream
-
-• Presets in the settings for when all the options are a bit overwhelming
+  * Blinking will instantly change the color
+  * More settings to tinker with in the Wallpaper and Daydream
+  * Presets in the settings for when all the options are a bit overwhelming
 
 
 Possibly coming:
